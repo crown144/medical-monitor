@@ -9,3 +9,8 @@ class testView(APIView):
     def post(self, request):
         data = request.data.get("data")
         return Response(data)
+
+class queryView(APIView):
+    def post(self, request):
+        data = request.data.get("收费明细")
+        return Response(data)
