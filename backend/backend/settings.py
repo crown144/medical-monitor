@@ -11,10 +11,22 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ä½¿ç”¨ç»å¯¹è·¯å¾„æ¥å¼•ç”¨ .env æ–‡ä»¶
+env_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+
+# åŠ è½½ .env æ–‡ä»¶ä¸­çš„ç¯å¢ƒå˜é‡
+load_dotenv(dotenv_path=env_file_path)
+NAME = os.getenv('NAME')
+USER = os.getenv('USER')
+PASSWORD=os.getenv('PASSWORD')
+HOST=os.getenv('HOST')
+PORT=os.getenv('PORT')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -79,12 +91,12 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = { 
     'default': 
     { 
-        'ENGINE': 'django.db.backends.mysql',    # Êı¾İ¿âÒıÇæ
-        'NAME': 'medical', # Êı¾İ¿âÃû³Æ
-        'HOST': '127.0.0.1', # Êı¾İ¿âµØÖ·£¬±¾»ú ip µØÖ· 127.0.0.1 
-        'PORT': 3306, # ¶Ë¿Ú 
-        'USER': 'root',  # Êı¾İ¿âÓÃ»§Ãû
-        'PASSWORD': '1234567890Wyx', # Êı¾İ¿âÃÜÂë
+        'ENGINE': 'django.db.backends.mysql',    # æ•°æ®åº“å¼•æ“
+        'NAME': NAME,
+        'USER': USER,
+        'PASSWORD': PASSWORD,
+        'HOST': HOST,  # æˆ–è€…ä¸€ä¸ªæŒ‡å®šçš„IPåœ°å€
+        'PORT': PORT,  # é»˜è®¤æ˜¯3306
     }   ,
     'OPTIONS': {
             'charset': 'utf8mb4',
