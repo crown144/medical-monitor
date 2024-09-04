@@ -1,0 +1,10 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\backend",
+    "\\backend\\.venv",
+    "\\backend\\monitor"
+  ],
+  "SelectedNode": "\\backend\\monitor\\views.py",
+  "PreviewInSolutionExplorer": false
+}
