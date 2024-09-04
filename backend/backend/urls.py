@@ -17,9 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from monitor.views import testView
+from monitor.views import testView,queryView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("test/", testView.as_view()),
+    path("query/",queryView.as_view())
 ]

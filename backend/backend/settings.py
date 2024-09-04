@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'rest_framework'
+    'rest_framework',
+    'monitor'
 ]
 
 MIDDLEWARE = [
@@ -75,14 +76,23 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+DATABASES = { 
+    'default': 
+    { 
+        'ENGINE': 'django.db.backends.mysql',    # 数据库引擎
+        'NAME': 'medical', # 数据库名称
+        'HOST': '127.0.0.1', # 数据库地址，本机 ip 地址 127.0.0.1 
+        'PORT': 3306, # 端口 
+        'USER': 'root',  # 数据库用户名
+        'PASSWORD': '1234567890Wyx', # 数据库密码
+    }   ,
+    'OPTIONS': {
+            'charset': 'utf8mb4',
+            'use_unicode': True,
+        },
 }
 
-
+DEFAULT_CHARSET = 'utf-8'
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
