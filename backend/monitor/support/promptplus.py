@@ -34,16 +34,19 @@ class MedicalServiceManager:
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-4",
-                 messages=[
-            #{"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
-            {"role": "user", "content": prompt},
-            ],
+                messages=[
+                    {"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
+                    {"role": "user", "content": prompt},
+                ],
                 max_tokens=150,
                 n=1,
                 stop=None,
                 temperature=0.7,
             )
-            return response.choices[0].message.content
+            response_text = response.choices[0].message.content
+            # 将返回的字符串转换为列表
+            service_names_list = eval(response_text)  # 使用 eval 将字符串转换为列表
+            return service_names_list
         except Exception as e:
             print(f"Error extracting service names: {e}")
             return None

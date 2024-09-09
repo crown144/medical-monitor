@@ -27,7 +27,7 @@ class queryView(APIView):
         try:
             manager = MedicalServiceManager(api_key, conn_details)
             service_names = manager.extract_service_names(data)
-            print(service_names)
+            print(type(service_names))
         except:
             service_names = []
         return Response(service_names)
