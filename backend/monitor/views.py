@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import MedicalService
 from .serializers import MedicalServiceSerializer
+from .support.promptplus import MedicalServiceManager
 # Create your views here.
 
 class testView(APIView):
@@ -15,7 +16,21 @@ class testView(APIView):
 class queryView(APIView):
     def post(self, request):
         data = request.data.get("收费明细")
-        return Response(data)
+        conn_details = {
+        "host": "localhost",
+        "port": 3306,
+        "user": "root",
+        "password": "1234567890Wyx",
+        "database": "medical",
+    }
+        api_key = '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'
+        try:
+            manager = MedicalServiceManager(api_key, conn_details)
+            service_names = manager.extract_service_names(data)
+            print(service_names)
+        except:
+            service_names = []
+        return Response(service_names)
     def get(self, request):
         # 查询数据库model
         listTest = MedicalService.objects.filter(local_service_name="椎间盘造影")
