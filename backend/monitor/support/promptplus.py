@@ -1,19 +1,22 @@
 import openai
 import pymysql
 
+
 class MedicalServiceManager:
     def __init__(self, api_key, conn_details):
         self.api_key = api_key
         self.conn_details = conn_details
         openai.api_key = self.api_key
+        openai.api_base = "https://api.foureast.cn/v1"
         
         # 定义各类的 prompt 模板
         self.extractor_prompt = (
             "请你从输入的文本中提取出医疗服务收费项目的名称，并将其转换为标准格式输出。\n"
             "输出格式如下：['医疗服务收费项目名称1', '医疗服务收费项目名称2', '医疗服务收费项目名称3',...]\n"
-            "例子：\n"
-            "输入：医院为脊柱滑脱患者行脊柱椎间融合器植入植骨融合术，收取“脊柱椎间融合器植入植骨融合术”“脊髓和神经根粘连松解术”费用。\n"
-            "输出：['脊柱椎间融合器植入植骨融合术', '脊髓和神经根粘连松解术']"
+            "除要求的输出外，不要返回任何多余的内容"
+            #"例子：\n"
+            #"输入：医院为脊柱滑脱患者行脊柱椎间融合器植入植骨融合术，收取“脊柱椎间融合器植入植骨融合术”“脊髓和神经根粘连松解术”费用。\n"
+            #"输出：['脊柱椎间融合器植入植骨融合术', '脊髓和神经根粘连松解术']"
         )
         self.sql_prompt = (
             "你擅长使用数据库Mysql，接下来根据提供的医疗服务收费项目名称，请你返回包含该医疗服务收费项目属性值的完整记录的查询语句，"
@@ -27,16 +30,20 @@ class MedicalServiceManager:
 
     def extract_service_names(self, text):
         prompt = f"{self.extractor_prompt}\n输入：{text}\n输出："
+        print(prompt)
         try:
-            response = openai.Completion.create(
-                engine="gpt-3.5-turbo",
-                prompt=prompt,
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                 messages=[
+            #{"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
+            {"role": "user", "content": prompt},
+            ],
                 max_tokens=150,
                 n=1,
                 stop=None,
                 temperature=0.7,
             )
-            return response.choices[0].text.strip()
+            return response.choices[0].message.content
         except Exception as e:
             print(f"Error extracting service names: {e}")
             return None
@@ -46,14 +53,17 @@ class MedicalServiceManager:
         for name in service_names:
             prompt = f"{self.sql_prompt}\n输入：{name}\n输出："
             try:
-                response = openai.Completion.create(
-                    engine="gpt-3.5-turbo",
-                    prompt=prompt,
-                    max_tokens=150,
-                    n=1,
-                    stop=None,
-                    temperature=0.7,
-                )
+                response = openai.ChatCompletion.create(
+                model="gpt-4",
+                 messages=[
+            {"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
+            {"role": "user", "content": prompt},
+            ],
+                max_tokens=150,
+                n=1,
+                stop=None,
+                temperature=0.7,
+            )
                 sql_query = response.choices[0].text.strip()
                 sql_queries.append(sql_query)
             except Exception as e:
@@ -89,10 +99,13 @@ class MedicalServiceManager:
     def check_charge_compliance(self, medical_data):
         prompt = f"{self.charge_check_prompt}\n输入：查询到的数据：{medical_data}\n输出："
         try:
-            response = openai.Completion.create(
-                engine="gpt-3.5-turbo",
-                prompt=prompt,
-                max_tokens=300,
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                 messages=[
+            {"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
+            {"role": "user", "content": prompt},
+            ],
+                max_tokens=150,
                 n=1,
                 stop=None,
                 temperature=0.7,
@@ -104,7 +117,8 @@ class MedicalServiceManager:
 
 # 使用示例
 if __name__ == "__main__":
-    api_key = "your-openai-api-key"
+    api_key = "sk-JpP5E3J1fIIpqfuf82A362E05e724067995b51Df399e035d"
+    
     conn_details = {
         "host": "localhost",
         "port": 3306,
@@ -119,14 +133,15 @@ if __name__ == "__main__":
     # Step 1: 提取医疗服务收费项目名称
     input_text = "医院为脊柱滑脱患者行脊柱椎间融合器植入植骨融合术，收取“脊柱椎间融合器植入植骨融合术”“脊髓和神经根粘连松解术”费用。"
     service_names = manager.extract_service_names(input_text)
+    print(service_names)
     
     # Step 2: 生成并执行 SQL 查询
-    if service_names:
-        sql_queries = manager.generate_sql_queries(service_names)
-        query_results = manager.execute_sql_queries(sql_queries)
+    #if service_names:
+    #    sql_queries = manager.generate_sql_queries(service_names)
+    #    query_results = manager.execute_sql_queries(sql_queries)
     
         # Step 3: 检查收费合规性
-        if query_results:
-            for result in query_results:
-                charge_compliance = manager.check_charge_compliance(result)
-                print(charge_compliance)
+    #    if query_results:
+    #        for result in query_results:
+    #            charge_compliance = manager.check_charge_compliance(result)
+    #            print(charge_compliance)

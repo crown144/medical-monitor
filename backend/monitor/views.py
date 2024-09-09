@@ -23,7 +23,7 @@ class queryView(APIView):
         "password": "1234567890Wyx",
         "database": "medical",
     }
-        api_key = ''
+        api_key = 'sk-JpP5E3J1fIIpqfuf82A362E05e724067995b51Df399e035d'
         try:
             manager = MedicalServiceManager(api_key, conn_details)
             service_names = manager.extract_service_names(data)
