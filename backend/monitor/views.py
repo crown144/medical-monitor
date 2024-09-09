@@ -33,8 +33,8 @@ class queryView(APIView):
         if service_names:
             sql_queries = manager.generate_sql_queries(service_names)
             print(sql_queries)
-            #query_results = manager.execute_sql_queries(sql_queries)
-        return Response(service_names)
+            query_results = manager.execute_sql_queries(sql_queries)
+        return Response(query_results)
     def get(self, request):
         # 查询数据库model
         listTest = MedicalService.objects.filter(local_service_name="椎间盘造影")

@@ -9,7 +9,7 @@ class MedicalServiceManager:
         openai.api_key = self.api_key
         openai.api_base = "https://api.foureast.cn/v1"
         
-    sql_file = """
+        sql_file = """
     CREATE DATABASE medical;
     USE medical;
     CREATE TABLE medical_service(
@@ -32,9 +32,10 @@ class MedicalServiceManager:
             #"输出：['脊柱椎间融合器植入植骨融合术', '脊髓和神经根粘连松解术']"
         )
         self.sql_prompt = (
-            "你擅长使用数据库Mysql，接下来根据我给你数据库的DDL语句和提供的医疗服务收费项目名称，请你返回包含该医疗服务收费项目属性值的完整记录的查询语句，"
-            "不要返回任何多余的内容，你的回答必须是可执行的SQL语句。DDL语句为：" + sql_file
-            "SQL语句为：SELECT * FROM medical WHERE item = '特定收费项目';"
+            "你擅长使用数据库Mysql，接下来根据我给你数据库的DDL语句和提供的医疗服务收费项目名称，请你返回包含该医疗服务收费项目属性值的完整记录的查询语句，"+
+            "不要返回任何多余的内容，你的回答必须是可执行的SQL语句。DDL语句为：" + sql_file+
+            "例子：SELECT * FROM medical WHERE item = '特定收费项目';"
+            "无需输出```sql```之类的字符" 
         )
         self.charge_check_prompt = (
             "你是一位医保控费管理人员，请你根据查询到的数据判断这些医疗服务收费项目之间的是否有包含关系，"
