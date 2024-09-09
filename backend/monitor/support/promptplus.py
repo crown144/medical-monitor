@@ -55,11 +55,12 @@ class MedicalServiceManager:
         sql_queries = []
         for name in service_names:
             prompt = f"{self.sql_prompt}\n输入：{name}\n输出："
+            print(prompt)
             try:
                 response = openai.ChatCompletion.create(
                 model="gpt-4",
                  messages=[
-            {"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
+            #{"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
             {"role": "user", "content": prompt},
             ],
                 max_tokens=150,
@@ -67,7 +68,7 @@ class MedicalServiceManager:
                 stop=None,
                 temperature=0.7,
             )
-                sql_query = response.choices[0].text.strip()
+                sql_query = response.choices[0].message.content
                 sql_queries.append(sql_query)
             except Exception as e:
                 print(f"Error generating SQL for {name}: {e}")

@@ -30,6 +30,10 @@ class queryView(APIView):
             print(type(service_names))
         except:
             service_names = []
+        if service_names:
+            sql_queries = manager.generate_sql_queries(service_names)
+            print(sql_queries)
+            #query_results = manager.execute_sql_queries(sql_queries)
         return Response(service_names)
     def get(self, request):
         # 查询数据库model
