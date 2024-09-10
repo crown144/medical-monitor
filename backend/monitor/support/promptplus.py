@@ -27,6 +27,7 @@ class MedicalServiceManager:
             "请你从输入的文本中提取出医疗服务收费项目的名称，并将其转换为标准格式输出。\n"
             "输出格式如下：['医疗服务收费项目名称1', '医疗服务收费项目名称2', '医疗服务收费项目名称3',...]\n"
             "除要求的输出外，不要返回任何多余的内容"
+            "无需输出```json```之类的字符" 
             #"例子：\n"
             #"输入：医院为脊柱滑脱患者行脊柱椎间融合器植入植骨融合术，收取“脊柱椎间融合器植入植骨融合术”“脊髓和神经根粘连松解术”费用。\n"
             #"输出：['脊柱椎间融合器植入植骨融合术', '脊髓和神经根粘连松解术']"
@@ -100,9 +101,14 @@ class MedicalServiceManager:
                     try:
                         # 执行 SQL 查询
                         cursor.execute(query)
-                        # 获取查询结果
-                        result = cursor.fetchall()
-                        results.append(result)
+                        # 获取列名
+                        column_names = [desc[0] for desc in cursor.description]
+                        query_results = cursor.fetchall()
+                        formatted_results = []
+                        for row in query_results:
+                            formatted_row = ", ".join(f"{name}是{value}" for name, value in zip(column_names, row))
+                            formatted_results.append(formatted_row)
+                        results.append(formatted_results)
                     except pymysql.MySQLError as e:
                         print(f"Error executing query '{query}': {e}")
                         results.append(None)
@@ -114,13 +120,23 @@ class MedicalServiceManager:
                 conn.close()
         return results
 
-    def check_charge_compliance(self, medical_data):
-        prompt = f"{self.charge_check_prompt}\n输入：查询到的数据：{medical_data}\n输出："
+    def check_charge_compliance(self, query_data,charge_data):
+        input_str = "输入："
+        for i in range(len(query_data)):
+            input_str += f"医疗服务项目代码{charge_data[i]}查询到的数据是：{query_data[i]};"
+    
+        # 移除最后的分号
+        input_str = input_str.rstrip(';')
+    
+        # 构造完整的prompt字符串
+        prompt1 = f"{input_str}\n输出："
+        prompt = self.charge_check_prompt+prompt1
+        print(prompt)
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-4",
                  messages=[
-            {"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
+            # {"role": "system", "content": "你是一位擅长提取文本信息的助手。"},
             {"role": "user", "content": prompt},
             ],
                 max_tokens=150,
@@ -128,7 +144,7 @@ class MedicalServiceManager:
                 stop=None,
                 temperature=0.7,
             )
-            return response.choices[0].text.strip()
+            return response.choices[0].message.content
         except Exception as e:
             print(f"Error checking charge compliance: {e}")
             return None

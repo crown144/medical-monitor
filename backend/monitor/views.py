@@ -34,7 +34,9 @@ class queryView(APIView):
             sql_queries = manager.generate_sql_queries(service_names)
             print(sql_queries)
             query_results = manager.execute_sql_queries(sql_queries)
-        return Response(query_results)
+            print(query_results)
+        results = manager.check_charge_compliance(query_results,service_names)
+        return Response(results)
     def get(self, request):
         # 查询数据库model
         listTest = MedicalService.objects.filter(local_service_name="椎间盘造影")
