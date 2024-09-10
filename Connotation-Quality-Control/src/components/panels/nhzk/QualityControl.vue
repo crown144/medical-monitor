@@ -1,15 +1,22 @@
 <template>
   <div class="container3">
     <el-card style="height: 100%;width: 100%;" v-loading="loading">
-      <h2>指标总表</h2>
+      <h2>指标计算</h2>
       <div class="top-bar">
         <el-select style="width: 200px;margin-left: 20px;" v-model="hospital" placeholder="选择医院"
           @change="hospitalChange">
-          <el-option v-for="item in hospitalList" :key="item.value" :label="item.label" :value="item.value" />
+          <!-- <el-option v-for="item in hospitalList" :key="item.value" :label="item.label" :value="item.value" /> -->
+          <el-option label="海南医科大学第一附属医院" value="海南医科大学第一附属医院" />
         </el-select>
-        <el-select style="width: 200px;margin-left: 20px;" v-model="type" placeholder="选择类型">
-          <el-option label="单病种" value="单病种" />
-          <el-option label="专科" value="专科" />
+        <el-select style="width: 200px;margin-left: 20px;" v-model="type" placeholder="选择科室">
+          <el-option label="全科室" value="全科室" />
+          <el-option label="心血管内科" value="心血管内科" />
+          <el-option label="骨科" value="骨科" />
+          <el-option label="重症医学科" value="重症医学科" />
+          <el-option label="医学影像科" value="医学影像科" />
+          <el-option label="康复理疗科" value="康复理疗科" />
+          <el-option label="临床检验科" value="临床检验科" />
+          <el-option label="血液净化科" value="血液净化科" />
         </el-select>
         <!-- <el-select style="width: 300px;margin-left: 20px;" v-model="disease" placeholder="选择病种">
           <el-option v-for="item in diseaseList" :key="item.value" :label="item.label" :value="item.value" />
@@ -24,11 +31,11 @@
           </template>
         </el-upload>
 
-        <el-button type="primary" style="margin-left: 60%;" @click="getTableList" class="myButton">加载并计算</el-button>
+        <el-button type="primary" style="margin-left: 33%;" @click="getTableList" class="myButton">加载并计算</el-button>
         <el-button type="primary" style="margin-left: 10px;" @click="tableReset" class="myButton">重置</el-button>
         <!-- <el-button type="primary" style="margin-left: 10px;" @click="exportExcel('IndicatorTable.xlsx', '#tableId')">结果导出</el-button> -->
       </div>
-      <el-table id="tableId"  height="750px"  :data="tableData" :summary-method="sumMethod"
+      <el-table id="tableId"  height="700px"  :data="tableData" :summary-method="sumMethod"
         style="margin-top: 20px; border: 0;" class="custom-table" :header-cell-style="tableHeaderColor">
         <el-table-column prop="disease" label="病历编号" width="120" align="center">
           <template #default="scope">
@@ -424,9 +431,25 @@ const getTableList = () => {
         "yes_or_no": 1
 
       },
+      {
+        "disease": 230410502,
+        "indicator_name": "医院为肩锁关节脱位患者行肩锁关节脱位切开复位内固定术，收取“肩锁关节脱位切开复位内固定术”和“韧带重建术”费用。",
+        "emr_id": "重复收费",
+        "predict": "肩锁关节脱位切开复位内固定术项目包含韧带重建术，因此，“韧带重建术”属于重复收费。",
+        "yes_or_no": 1
+
+      },
+      {
+        "disease": 230410502,
+        "indicator_name": "医院对患者开展足部X线摄影（DR）检查，同时收取“X线摄影(DR)”和“普通透视（四肢）”费用。",
+        "emr_id": "重复收费",
+        "predict": "X线摄影（DR）设备与传统X线设备不兼容，其中普通透视（四肢）”为重复收费。",
+        "yes_or_no": 1
+
+      },
     ]
     loading.value = false
-    // 改这里 1500 = 1.5秒
+    // loading秒数 1500 = 1.5秒
   }, 1500);
 
   /* const req = {
@@ -526,8 +549,8 @@ const handleCurrentChange = (val) => {
 
 .myButton {
   border-radius: 20px;
-  width: 120px;
-
+  width: 150px;
+  height: 50px;
 }
 
 .custom-table {
