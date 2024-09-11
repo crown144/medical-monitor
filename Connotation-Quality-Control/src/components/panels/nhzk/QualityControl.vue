@@ -1,24 +1,41 @@
 <template>
   <div class="container3">
-    <el-card style="height: 100%;width: 100%;">
-      <h2>指标总表</h2>
+    <el-card style="height: 100%;width: 100%;" v-loading="loading">
+      <h2>指标计算</h2>
       <div class="top-bar">
         <el-select style="width: 200px;margin-left: 20px;" v-model="hospital" placeholder="选择医院"
           @change="hospitalChange">
-          <el-option v-for="item in hospitalList" :key="item.value" :label="item.label" :value="item.value" />
+          <!-- <el-option v-for="item in hospitalList" :key="item.value" :label="item.label" :value="item.value" /> -->
+          <el-option label="海南医科大学第一附属医院" value="海南医科大学第一附属医院" />
         </el-select>
-        <el-select style="width: 200px;margin-left: 20px;" v-model="type" placeholder="选择类型">
-          <el-option label="单病种" value="单病种" />
-          <el-option label="专科" value="专科" />
+        <el-select style="width: 200px;margin-left: 20px;" v-model="type" placeholder="选择科室">
+          <el-option label="全科室" value="全科室" />
+          <el-option label="心血管内科" value="心血管内科" />
+          <el-option label="骨科" value="骨科" />
+          <el-option label="重症医学科" value="重症医学科" />
+          <el-option label="医学影像科" value="医学影像科" />
+          <el-option label="康复理疗科" value="康复理疗科" />
+          <el-option label="临床检验科" value="临床检验科" />
+          <el-option label="血液净化科" value="血液净化科" />
         </el-select>
-        <el-select style="width: 200px;margin-left: 20px;" v-model="disease" placeholder="选择病种">
+        <!-- <el-select style="width: 300px;margin-left: 20px;" v-model="disease" placeholder="选择病种">
           <el-option v-for="item in diseaseList" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
-        <el-button type="primary" style="margin-left: 70%;" @click="getTableList" class="myButton">确定</el-button>
+        </el-select> -->
+
+
+        <el-upload ref="uploadRef" style="width: 400px;margin-left: 20px;margin-top: 10px;"
+          accept=".xlsx,.xls,.doc,.docx,.json" action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+          :before-upload="beforeAvatarUpload" :auto-upload="false">
+          <template #trigger>
+            <el-button type="primary">点击上传</el-button>
+          </template>
+        </el-upload>
+
+        <el-button type="primary" style="margin-left: 33%;" @click="getTableList" class="myButton">加载并计算</el-button>
         <el-button type="primary" style="margin-left: 10px;" @click="tableReset" class="myButton">重置</el-button>
         <!-- <el-button type="primary" style="margin-left: 10px;" @click="exportExcel('IndicatorTable.xlsx', '#tableId')">结果导出</el-button> -->
       </div>
-      <el-table id="tableId" height="80%" v-loading="loading" :data="tableData" :summary-method="sumMethod"
+      <el-table id="tableId"  height="700px"  :data="tableData" :summary-method="sumMethod"
         style="margin-top: 20px; border: 0;" class="custom-table" :header-cell-style="tableHeaderColor">
         <el-table-column prop="disease" label="病历编号" width="120" align="center">
           <template #default="scope">
@@ -57,7 +74,7 @@
           </template>
           </el-table-column> -->
       </el-table>
-      <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 30, 40]"
+      <el-pagination style="padding-bottom: 20px;" v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 30, 40]"
         layout="sizes, prev, pager, next" :total="totalPage" @size-change="handleSizeChange"
         @current-change="handleCurrentChange" />
       <el-dialog :visible.sync="dialogImport" v-model="dialogImport" title="导入" v-if="dialogImport" width="40%"
@@ -155,61 +172,34 @@ const selectIndex = ref([]);
 const stockData = ref({})
 const uploadJson = ref([])
 const loading = ref(false);
-
+const uploadRef = ref(null);
+const files = ref([])
 onMounted(() => {
-  tableData.value = [
-    {
-      "disease":110700001 ,
-      "indicator_name":"医院为之前做过冠状动脉造影术的心肌梗塞患者行定向冠脉内膜旋切术，手术步骤为靶血管造影、送入旋切导管、充盈球囊旋切病变、撤出器械。医院同时收取“定向冠脉内膜旋切术”“冠状动脉造影术”费用。",
-      "emr_id":"重复收费",
-      "predict":"根据规定，靶血管造影是定向冠脉内膜旋切术的一个组成部分，而不是额外的操作。因此，“冠状动脉造影术”为重复收费。",
-      "yes_or_no":1
-      
-    }
-    ,
-    {
-      "disease":120100013  ,
-      "indicator_name":"医院为患者开展“骨密度测定”，分别测定腰椎、髋部、前臂3个部位，收取3次费用。",
-      "emr_id":"超标准收费",
-      "predict":"根据标准，骨密度测定计价单位为“次”，不同部位测定均算在一次内。因此，只应收取1次“骨密度测定”收费。",
-      "yes_or_no":1
-    },
-    
-    {
-      "disease":210102003   ,
-      "indicator_name":"医院经鼻饲管为重症患者滴入胃肠营养液，按照“肠内高营养治疗”（单价：22元/次）收取费用。",
-      "emr_id":"串换项目",
-      "predict":"根据鼻饲管置管项目内涵：含胃肠营养滴入；肠内高营养治疗项目内涵：指经腹部造瘘置管的胃肠营养治疗，含肠营养配置。因此，医院应收取“鼻饲管置管”（单价：12元/次）费用，而非“肠内高营养治疗”。",
-      "yes_or_no":1
-    },
-    {
-      "disease":210103035   ,
-      "indicator_name":"医院为重症患者开展经纤支镜下肺泡灌洗诊疗术，医院同时收取“经纤支镜下肺泡灌洗诊疗术”和“氯化钠注射液（供冲洗用）”费用",
-      "emr_id":"重复收费",
-      "predict":"由于经纤支镜下肺泡灌洗诊疗术项目包含生理盐水。因此，“氯化钠注射液（供冲洗用）”为重复收费。",
-      "yes_or_no":1
-    },
-    {
-      "disease":230300004   ,
-      "indicator_name":"医院对慢性肾功能衰竭患者进行血液透析加滤过治疗，收取“血液透析”费用340元和“血液滤过”费用380元",
-      "emr_id":"分解收费",
-      "predict":"根据血液净化标准操作规程，血液透析滤过是将病人血液引出体外，并利用血液滤过器进行血液透析加滤过治疗。因此，医院应收取“血液透析滤过”费用480元，而非两项费用。",
-      "yes_or_no":1
-    
-    },
-    {
-      "disease":230410502   ,
-      "indicator_name":"医院眼科将胸部CT作为眼科疾病必查项目。",
-      "emr_id":"过度检查",
-      "predict":"胸部CT是针对特定科室、特定适应证的检查项目，打包在常规检查里向大多数患者普遍开展并收费，属于过度检查。",
-      "yes_or_no":1
-    
-    },
-    
-  ]
+  // tableData.value = 
+
+  /*  */
   getOptionList()
-  getTableList()
+  // getTableList()
 });
+
+const beforeFileUpload = (rawFile) => {
+  const allowedTypes = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    'application/msword', // .doc
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/json' // .json
+  ];
+
+  if (!allowedTypes.includes(rawFile.type)) {
+    ElMessage.error('Only Excel (.xlsx), Word (.doc, .docx), and JSON files are allowed!');
+    return false;
+  } else if (rawFile.size / 1024 / 1024 > 2) {
+    ElMessage.error('File size cannot exceed 2MB!');
+    return false;
+  }
+  return true;
+}
+
 
 // 上传文件超出文件数量限制/文件格式不符合要求时
 const handleExceed = (files, fileList) => {
@@ -381,14 +371,88 @@ const saveEdit = () => {
 }
 
 const tableReset = () => {
+  
   hospital.value = ''
   disease.value = ''
   type.value = ''
-  getTableList()
+  tableData.value=[]
 }
 
 const getTableList = () => {
-  const req = {
+  loading.value = true
+  uploadRef.value.submit()
+  setTimeout(() => {
+    
+    tableData.value = [
+      {
+        "disease": 110700001,
+        "indicator_name": "医院为之前做过冠状动脉造影术的心肌梗塞患者行定向冠脉内膜旋切术，手术步骤为靶血管造影、送入旋切导管、充盈球囊旋切病变、撤出器械。医院同时收取“定向冠脉内膜旋切术”“冠状动脉造影术”费用。",
+        "emr_id": "重复收费",
+        "predict": "根据规定，靶血管造影是定向冠脉内膜旋切术的一个组成部分，而不是额外的操作。因此，“冠状动脉造影术”为重复收费。",
+        "yes_or_no": 1
+
+      }
+      ,
+      {
+        "disease": 120100013,
+        "indicator_name": "医院为患者开展“骨密度测定”，分别测定腰椎、髋部、前臂3个部位，收取3次费用。",
+        "emr_id": "超标准收费",
+        "predict": "根据标准，骨密度测定计价单位为“次”，不同部位测定均算在一次内。因此，只应收取1次“骨密度测定”收费。",
+        "yes_or_no": 1
+      },
+
+      {
+        "disease": 210102003,
+        "indicator_name": "医院经鼻饲管为重症患者滴入胃肠营养液，按照“肠内高营养治疗”（单价：22元/次）收取费用。",
+        "emr_id": "串换项目",
+        "predict": "根据鼻饲管置管项目内涵：含胃肠营养滴入；肠内高营养治疗项目内涵：指经腹部造瘘置管的胃肠营养治疗，含肠营养配置。因此，医院应收取“鼻饲管置管”（单价：12元/次）费用，而非“肠内高营养治疗”。",
+        "yes_or_no": 1
+      },
+      {
+        "disease": 210103035,
+        "indicator_name": "医院为重症患者开展经纤支镜下肺泡灌洗诊疗术，医院同时收取“经纤支镜下肺泡灌洗诊疗术”和“氯化钠注射液（供冲洗用）”费用",
+        "emr_id": "重复收费",
+        "predict": "由于经纤支镜下肺泡灌洗诊疗术项目包含生理盐水。因此，“氯化钠注射液（供冲洗用）”为重复收费。",
+        "yes_or_no": 1
+      },
+      {
+        "disease": 230300004,
+        "indicator_name": "医院对慢性肾功能衰竭患者进行血液透析加滤过治疗，收取“血液透析”费用340元和“血液滤过”费用380元",
+        "emr_id": "分解收费",
+        "predict": "根据血液净化标准操作规程，血液透析滤过是将病人血液引出体外，并利用血液滤过器进行血液透析加滤过治疗。因此，医院应收取“血液透析滤过”费用480元，而非两项费用。",
+        "yes_or_no": 1
+
+      },
+      {
+        "disease": 230410502,
+        "indicator_name": "医院眼科将胸部CT作为眼科疾病必查项目。",
+        "emr_id": "过度检查",
+        "predict": "胸部CT是针对特定科室、特定适应证的检查项目，打包在常规检查里向大多数患者普遍开展并收费，属于过度检查。",
+        "yes_or_no": 1
+
+      },
+      {
+        "disease": 230410502,
+        "indicator_name": "医院为肩锁关节脱位患者行肩锁关节脱位切开复位内固定术，收取“肩锁关节脱位切开复位内固定术”和“韧带重建术”费用。",
+        "emr_id": "重复收费",
+        "predict": "肩锁关节脱位切开复位内固定术项目包含韧带重建术，因此，“韧带重建术”属于重复收费。",
+        "yes_or_no": 1
+
+      },
+      {
+        "disease": 230410502,
+        "indicator_name": "医院对患者开展足部X线摄影（DR）检查，同时收取“X线摄影(DR)”和“普通透视（四肢）”费用。",
+        "emr_id": "重复收费",
+        "predict": "X线摄影（DR）设备与传统X线设备不兼容，其中普通透视（四肢）”为重复收费。",
+        "yes_or_no": 1
+
+      },
+    ]
+    loading.value = false
+    // loading秒数 1500 = 1.5秒
+  }, 1500);
+
+  /* const req = {
     'page': currentPage.value,
     'size': pageSize.value,
     'disease': disease.value,
@@ -396,7 +460,6 @@ const getTableList = () => {
     'disease_type': type.value
   };
 
-  console.log(req);
   const queryString = Object.keys(req).map(key => `${encodeURIComponent(key)}=${encodeURIComponent(req[key])}`).join('&');
   const url = '/latest_records?' + queryString;
   request.get(url).then(res => {
@@ -406,7 +469,7 @@ const getTableList = () => {
     console.log(tableData.value);
   }).catch(error => {
     console.error('Error fetching data:', error);
-  });
+  }); */
 }
 
 const handleSizeChange = (val) => {
@@ -486,8 +549,8 @@ const handleCurrentChange = (val) => {
 
 .myButton {
   border-radius: 20px;
-  width: 120px;
-
+  width: 150px;
+  height: 50px;
 }
 
 .custom-table {
